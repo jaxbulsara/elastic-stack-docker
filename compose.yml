@@ -1,9 +1,7 @@
 services:
   elasticsearch:
     build: elasticsearch
-    environment:
-      ES_JAVA_OPTS: "-Xms256m -Xmx256m"
     deploy:
       resources:
         limits:
-          memory: 1g
+          memory: ${ES_MEMORY_LIMIT}
