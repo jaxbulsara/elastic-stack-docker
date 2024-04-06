@@ -1,7 +1,40 @@
 services:
   elasticsearch:
-    build: elasticsearch
+    build: elastic/elasticsearch
+    environment:
+      LICENSE: ${ES_LICENSE}
+      ELASTIC_PASSWORD: ${ES_PASSWORD}
+    volumes:
+      - type: volume
+        source: certs
+        target: /usr/share/elasticsearch/config/certs
+    ports:
+      - 9200:9200
     deploy:
       resources:
         limits:
           memory: ${ES_MEMORY_LIMIT}
+    depends_on:
+      elastic-setup:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "bash healthcheck.sh" ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
+  elastic-setup:
+    build: elastic/setup
+    user: "0"
+    volumes:
+      - type: volume
+        source: certs
+        target: /usr/share/elasticsearch/config/certs
+    healthcheck:
+      test: ["CMD-SHELL", "bash healthcheck.sh"]
+      interval: 1s
+      timeout: 5s
+      retries: 120
+
+volumes:
+  certs:
