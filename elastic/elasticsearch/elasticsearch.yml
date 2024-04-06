@@ -1,5 +1,6 @@
 # Cluster config
 cluster.name: elastic
+node.name: elasticsearch
 discovery.type: single-node
 
 # Network config

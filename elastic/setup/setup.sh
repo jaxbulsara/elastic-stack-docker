@@ -1,5 +1,13 @@
 #!/bin/bash
 
+if [ x${ES_PASSWORD} == x ]; then
+  echo "Set the ES_PASSWORD environment variable in the .env file"
+  exit 1
+elif [ x${KB_PASSWORD} == x ]; then
+  echo "Set the KB_PASSWORD environment variable in the .env file"
+  exit 1
+fi
+
 if [ ! -f config/certs/ca.zip ]; then
   echo "Creating Certificate Authority"
 
@@ -37,6 +45,19 @@ until
     grep -q "missing authentication credentials"
 do
   sleep 30
+done
+
+echo "Setting kibana_system password"
+until
+  curl -s -X POST \
+    --cacert config/certs/ca/ca.crt \
+    -u "elastic:${ES_PASSWORD}" \
+    -H "Content-Type: application/json" \
+    https://elasticsearch:9200/_security/user/kibana_system/_password \
+    -d "{\"password\":\"${KB_PASSWORD}\"}" |
+    grep -q "^{}"
+do
+  sleep 10
 done
 
 echo "Completed."

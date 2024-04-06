@@ -10,6 +10,8 @@ services:
         target: /usr/share/elasticsearch/config/certs
     ports:
       - 9200:9200
+    networks:
+      - elastic
     deploy:
       resources:
         limits:
@@ -23,13 +25,42 @@ services:
       timeout: 10s
       retries: 120
 
+  kibana:
+    build: elastic/kibana
+    environment:
+      ELASTICSEARCH_HOSTS: https://elasticsearch:9200
+      ELASTICSEARCH_USERNAME: kibana_system
+      ELASTICSEARCH_PASSWORD: ${KB_PASSWORD}
+      ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES: config/certs/ca/ca.crt
+    volumes:
+      - type: volume
+        source: certs
+        target: /usr/share/kibana/config/certs
+    ports:
+      - 5601:5601
+    networks:
+      - elastic
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "bash healthcheck.sh", ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
   elastic-setup:
     build: elastic/setup
     user: "0"
+    environment:
+      ES_PASSWORD: ${ES_PASSWORD}
+      KB_PASSWORD: ${KB_PASSWORD}
     volumes:
       - type: volume
         source: certs
         target: /usr/share/elasticsearch/config/certs
+    networks:
+      - elastic
     healthcheck:
       test: ["CMD-SHELL", "bash healthcheck.sh"]
       interval: 1s
@@ -38,3 +69,6 @@ services:
 
 volumes:
   certs:
+
+networks:
+  elastic:

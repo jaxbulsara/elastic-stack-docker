@@ -7,3 +7,7 @@ COPY    jvm.options             config/jvm.options.d/
 
 # Define exposed ports
 EXPOSE  9200
+
+# Define volumes
+VOLUME /usr/share/elasticsearch/config/certs
+VOLUME /usr/share/elasticsearch/data
