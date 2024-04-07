@@ -28,10 +28,7 @@ services:
   kibana:
     build: elastic/kibana
     environment:
-      ELASTICSEARCH_HOSTS: https://elasticsearch:9200
-      ELASTICSEARCH_USERNAME: kibana_system
-      ELASTICSEARCH_PASSWORD: ${KB_PASSWORD}
-      ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES: config/certs/ca/ca.crt
+      KB_PASSWORD: ${KB_PASSWORD}
     volumes:
       - type: volume
         source: certs
