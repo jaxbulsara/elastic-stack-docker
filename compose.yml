@@ -1,4 +1,16 @@
 services:
+  frontend:
+    build: frontend
+    ports:
+      - 8080:80
+
+  backend:
+    build: backend
+    volumes:
+      - "logs:/logs"
+    ports:
+      - 8000:8000
+
   elasticsearch:
     build: elastic/elasticsearch
     environment:
@@ -65,6 +77,7 @@ services:
       retries: 120
 
 volumes:
+  logs:
   certs:
 
 networks:

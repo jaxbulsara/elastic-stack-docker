@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Message Hasher</title>
+    <script>
+      // Mock function to simulate sending a message to a REST API and receiving a SHA256 hash back
+      function hashMessage(message) {
+        console.log("Sending request.");
+        return fetch("http://localhost:8000/hash", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: message }),
+        }).then((response) => response.json());
+      }
+
+      window.onload = function () {
+        const form = document.getElementById("messageForm");
+        const messageInput = document.getElementById("message");
+        const historyList = document.getElementById("history");
+
+        form.onsubmit = function (event) {
+          event.preventDefault();
+          const message = messageInput.value;
+          console.log("Got message: " + message);
+
+          hashMessage(message).then((data) => {
+            // Add the message and its hash to the history list
+            console.log("Got response: ", data.hash);
+            const historyItem = document.createElement("li");
+            historyItem.textContent = `Message: ${message}, Hash: ${data.hash}`;
+            historyList.appendChild(historyItem);
+          });
+
+          // Reset the form
+          form.reset();
+        };
+      };
+    </script>
+  </head>
+  <body>
+    <h2>Message Hasher</h2>
+    <form id="messageForm">
+      <label for="message">Enter your message:</label>
+      <input type="text" id="message" name="message" required />
+      <button type="submit">Hash Message</button>
+    </form>
+    <h3>History</h3>
+    <ul id="history">
+      <!-- History of messages and hashes will appear here -->
+    </ul>
+  </body>
+</html>
