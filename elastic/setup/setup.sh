@@ -54,8 +54,90 @@ until
     -u "elastic:${ES_PASSWORD}" \
     -H "Content-Type: application/json" \
     https://elasticsearch:9200/_security/user/kibana_system/_password \
-    -d "{\"password\":\"${KB_PASSWORD}\"}" |
-    grep -q "^{}"
+    -d "
+      {
+        \"password\": \"${KB_PASSWORD}\"
+      }
+      " |
+    grep -q '^{}'
+do
+  sleep 10
+done
+
+echo "Creating logstash_writer role"
+until
+  curl -s -X POST \
+    --cacert config/certs/ca/ca.crt \
+    -u "elastic:${ES_PASSWORD}" \
+    -H "Content-Type: application/json" \
+    https://elasticsearch:9200/_security/role/logstash_writer \
+    -d '
+      {
+        "cluster": ["manage_index_templates", "monitor", "manage_ilm"],
+        "indices": [
+          {
+            "names": [ "logstash-*", "logs-generic-default" ],
+            "privileges": ["write","create","create_index","manage","manage_ilm"]
+          }
+        ]
+      }
+      ' |
+    grep -q '^{"role":{"created":true}}'
+do
+  sleep 10
+done
+
+echo "Creating logstash_internal user"
+until
+  curl -s -X POST \
+    --cacert config/certs/ca/ca.crt \
+    -u "elastic:${ES_PASSWORD}" \
+    -H "Content-Type: application/json" \
+    https://elasticsearch:9200/_security/user/logstash_internal \
+    -d "
+      {
+        \"password\" : \"${LS_PASSWORD}\",
+        \"roles\" : [ \"logstash_writer\"],
+        \"full_name\" : \"Internal Logstash User\"
+      }
+      " |
+    grep -q '^{"created":true}'
+do
+  sleep 10
+done
+
+echo "Creating logstash_reader role"
+until
+  curl -s -X POST \
+    --cacert config/certs/ca/ca.crt \
+    -u "elastic:${ES_PASSWORD}" \
+    -H "Content-Type: application/json" \
+    https://elasticsearch:9200/_security/role/logstash_reader \
+    -d '
+      {
+        "cluster": ["manage_logstash_pipelines"]
+      }
+      ' |
+    grep -q '^{"role":{"created":true}}'
+do
+  sleep 10
+done
+
+echo "Creating logstash_user user"
+until
+  curl -s -X POST \
+    --cacert config/certs/ca/ca.crt \
+    -u "elastic:${ES_PASSWORD}" \
+    -H "Content-Type: application/json" \
+    https://elasticsearch:9200/_security/user/logstash_user \
+    -d "
+      {
+        \"password\" : \"${KB_PASSWORD}\",
+        \"roles\" : [ \"logstash_reader\", \"logstash_admin\"],
+        \"full_name\" : \"Kibana User for Logstash\"
+      }
+      " |
+    grep -q '^{"created":true}'
 do
   sleep 10
 done

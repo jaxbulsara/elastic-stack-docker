@@ -1,6 +1,6 @@
 FROM    python:3.10-slim
 
-VOLUME  /logs
+VOLUME  /var/logs
 
 WORKDIR /app
 

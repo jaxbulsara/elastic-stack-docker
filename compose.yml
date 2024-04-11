@@ -7,9 +7,35 @@ services:
   backend:
     build: backend
     volumes:
-      - "logs:/logs"
+      - "./logs:/var/logs"
     ports:
       - 8000:8000
+
+  filebeat:
+    build: elastic/filebeat
+    volumes:
+      - "./logs:/var/log"
+    networks:
+      - elastic
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  logstash:
+    build: elastic/logstash
+    environment:
+      LS_PASSWORD: ${LS_PASSWORD}
+    volumes:
+      - type: volume
+        source: certs
+        target: /usr/share/logstash/config/certs
+    networks:
+      - elastic
+    ports:
+      - 5044:5044
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
 
   elasticsearch:
     build: elastic/elasticsearch
@@ -64,6 +90,7 @@ services:
     environment:
       ES_PASSWORD: ${ES_PASSWORD}
       KB_PASSWORD: ${KB_PASSWORD}
+      LS_PASSWORD: ${LS_PASSWORD}
     volumes:
       - type: volume
         source: certs
@@ -77,7 +104,6 @@ services:
       retries: 120
 
 volumes:
-  logs:
   certs:
 
 networks:

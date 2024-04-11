@@ -13,9 +13,9 @@ class Item(BaseModel):
 
 # Function to log requests.
 def log_request(message: str, hash_value: str):
-    timestamp = datetime.datetime.now()
-    log_message = f"{timestamp} - Message: {message} - Hash: {hash_value}\n"
-    with open("/logs/hash_requests.log", "a") as log_file:
+    timestamp = datetime.datetime.now().replace(microsecond=0).isoformat()
+    log_message = f"[{timestamp}] Hash: {hash_value}, Message: {message}\n"
+    with open("/var/logs/hash_requests.log", "a") as log_file:
         log_file.write(log_message)
 
 
