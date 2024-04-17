@@ -1,15 +1,9 @@
 FROM    python:3.10-slim
 
-VOLUME  /var/logs
+RUN     pip install pipenv
 
 WORKDIR /app
-
-COPY    requirements.txt .
-
-RUN     pip install --no-cache-dir -r requirements.txt
+COPY    Pipfile* .
+RUN     pipenv install --system
 
 COPY    . .
-
-RUN     mkdir /logs
-
-CMD     ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]

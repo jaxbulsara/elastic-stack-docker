@@ -1,7 +1,7 @@
 import hashlib
 import logging
 
-from .worker import calculate_hash
+from celery import Celery
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
@@ -11,6 +11,10 @@ handler = logging.FileHandler("/logs/hash_requests.log")
 formatter = logging.Formatter("[%(asctime)s] %(message)s")
 handler.setFormatter(formatter)
 log.addHandler(handler)
+
+broker_url = 'amqp://celery-rabbitmq'
+backend_url = 'rpc://celery-redis'
+celery = Celery('app', broker=broker_url, backend=backend_url)
 
 app = FastAPI()
 
@@ -23,8 +27,8 @@ class Item(BaseModel):
 async def hash_message(item: Item):
     if item.message:
         try:
-            task = calculate_hash.delay(message)
-            hash_hex = task.get()
+            hash_object = hashlib.sha256(item.message.encode())
+            hash_hex = hash_object.hexdigest()
 
             log.info("Hash: %s, Message: %s", hash_hex, item.message)
 
