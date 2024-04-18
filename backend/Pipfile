@@ -4,12 +4,16 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-fastapi = "==0.78.0"
-pydantic = "==1.9.0"
-uvicorn = {extras = ["standard"], version = "==0.17.6"}
+fastapi = "*"
+pydantic = "*"
+uvicorn = {extras = ["standard"], version = "*"}
 celery = "*"
 
 [dev-packages]
+pylint = "*"
+autoflake = "*"
+isort = "*"
+black = "*"
 
 [requires]
 python_version = "3.12"

@@ -1,0 +1,51 @@
+services:
+  frontend:
+    build: frontend
+    hostname: frontend
+    ports:
+      - 8080:80
+    depends_on:
+      - backend-web
+
+  backend-web:
+    build: backend
+    hostname: backend-web
+    volumes:
+      - logs:/logs
+    networks:
+      - celery
+    ports:
+      - 8000:8000
+    depends_on:
+      - backend-worker
+    command: ["uvicorn", "app.web:app", "--host", "0.0.0.0", "--port", "8000"]
+
+  backend-worker:
+    build: backend
+    hostname: backend-worker
+    networks:
+      - celery
+    volumes:
+      - logs:/logs
+    depends_on:
+      - celery-rabbitmq
+      - celery-redis
+    command: ["celery", "-A", "app.worker.celery", "worker", "--loglevel=INFO"]
+
+  celery-rabbitmq:
+    build: backend/rabbitmq
+    hostname: celery-rabbitmq
+    networks:
+      - celery
+
+  celery-redis:
+    build: backend/redis
+    hostname: celery-redis
+    networks:
+      - celery
+
+volumes:
+  logs:
+
+networks:
+  celery:

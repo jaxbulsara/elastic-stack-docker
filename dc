@@ -1,1 +1,1 @@
-docker compose $@
+docker compose -f app-compose.yml -f elastic-compose.yml $@
